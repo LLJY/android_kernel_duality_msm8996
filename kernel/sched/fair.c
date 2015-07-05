@@ -7646,7 +7646,14 @@ static int detach_tasks(struct lb_env *env)
 
 redo:
 	while (!list_empty(tasks)) {
-		p = list_last_entry(tasks, struct task_struct, se.group_node);
+		/*
+		 * We don't want to steal all, otherwise we may be treated likewise,
+		 * which could at worst lead to a livelock crash.
+		 */
+		if (env->idle != CPU_NOT_IDLE && env->src_rq->nr_running <= 1)
+			break;
+
+		p = list_first_entry(tasks, struct task_struct, se.group_node);
 
 		env->loop++;
 		/* We've more or less seen every task there is, call it quits */
