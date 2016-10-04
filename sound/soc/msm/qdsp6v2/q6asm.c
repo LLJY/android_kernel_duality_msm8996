@@ -7873,7 +7873,7 @@ int q6asm_send_cal(struct audio_client *ac)
 		rc = -ETIMEDOUT;
 		goto free;
 	}
-	if (atomic_read(&ac->cmd_state_pp) > 0) {
+	if (atomic_read(&ac->cmd_state) > 0) {
 		pr_err("%s: DSP returned error[%d] audio audstrm cal send\n",
 				__func__, atomic_read(&ac->cmd_state_pp));
 		rc = -EINVAL;
