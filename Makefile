@@ -297,8 +297,8 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 GRAPHITE	= -fgraphite -fgraphite-identity -fivopts -ftree-loop-linear -ftree-loop-vectorize -ftree-loop-distribute-patterns -ftree-slp-vectorize -ftree-partial-pre -ftree-vectorize -floop-parallelize-all -floop-interchange -floop-strip-mine -floop-block -pipe -fmodulo-sched -fmodulo-sched-allow-regmoves -fgcse-las -fgcse-after-reload -fgcse-lm -fgcse-sm -fsched-spec-load -fsingle-precision-constant -fpredictive-commoning -fvect-cost-model -ffast-math -fno-delete-null-pointer-checks -funswitch-loops
 HOSTCC       = ccache gcc
 HOSTCXX      = ccache g++
-HOSTCFLAGS   = $(GRAPHITE) -Wall -Wmissing-prototypes -Wstrict-prototypes -Ofast -fomit-frame-pointer -Wno-unused-parameter -Wno-sign-compare -Wno-missing-field-initializers -Wno-unused-variable -Wno-unused-value -fno-inline-functions -std=gnu89
-HOSTCXXFLAGS = $(GRAPHITE) -Ofast -fno-inline-functions
+HOSTCFLAGS   = $(GRAPHITE) -Wall -Wmissing-prototypes -Wstrict-prototypes -O3 -fomit-frame-pointer -Wno-unused-parameter -Wno-sign-compare -Wno-missing-field-initializers -Wno-unused-variable -Wno-unused-value -fno-inline-functions -std=gnu89
+HOSTCXXFLAGS = $(GRAPHITE) -O3 -fno-inline-functions
 
 ifeq ($(shell $(HOSTCC) -v 2>&1 | grep -c "clang version"), 1)
 HOSTCFLAGS  += -Wno-unused-value -Wno-unused-parameter \
@@ -354,9 +354,9 @@ include $(srctree)/scripts/Kbuild.include
 # Make variables (CC, etc...)
 AS		= $(CROSS_COMPILE)as
 LD		= $(CROSS_COMPILE)ld
-LD		+= -Ofast --strip-debug
+LD		+= -O3 --strip-debug
 CC		= ccache $(CROSS_COMPILE)gcc
-CC		+= -Ofast -fmodulo-sched -fmodulo-sched-allow-regmoves
+CC		+= -O3 -fmodulo-sched -fmodulo-sched-allow-regmoves
 CPP		= $(CC) -E
 AR		= $(CROSS_COMPILE)ar
 NM		= $(CROSS_COMPILE)nm
@@ -411,7 +411,7 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -Wno-int-conversion -Wno-discarded-qualifiers
 
 # XerXes optimization setup
-KBUILD_CFLAGS	+= -Ofast -g0 -DNDEBUG
+KBUILD_CFLAGS	+= -O3 -g0 -DNDEBUG
 		   
 # Kryo doesn't need 835769/843419 erratum fixes.
 # Some toolchains enable those fixes automatically, so opt-out.
