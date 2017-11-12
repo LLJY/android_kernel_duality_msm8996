@@ -293,12 +293,11 @@ export KCONFIG_CONFIG
 CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 	  else if [ -x /bin/bash ]; then echo /bin/bash; \
 	  else echo sh; fi ; fi)
-
-GRAPHITE	= -fgraphite -fgraphite-identity -fivopts -ftree-loop-linear -ftree-loop-vectorize -ftree-loop-distribute-patterns -ftree-slp-vectorize -ftree-partial-pre -ftree-vectorize -floop-parallelize-all -floop-interchange -floop-strip-mine -floop-block -pipe -fmodulo-sched -fmodulo-sched-allow-regmoves -fgcse-las -fgcse-after-reload -fgcse-lm -fgcse-sm -fsched-spec-load -fsingle-precision-constant -fpredictive-commoning -fvect-cost-model -ffast-math -fno-delete-null-pointer-checks -funswitch-loops
+	  
 HOSTCC       = ccache gcc
 HOSTCXX      = ccache g++
-HOSTCFLAGS   = $(GRAPHITE) -Wall -Wmissing-prototypes -Wstrict-prototypes -O3 -fomit-frame-pointer -Wno-unused-parameter -Wno-sign-compare -Wno-missing-field-initializers -Wno-unused-variable -Wno-unused-value -fno-inline-functions -std=gnu89
-HOSTCXXFLAGS = $(GRAPHITE) -O3 -fno-inline-functions
+HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O3 -fomit-frame-pointer -Wno-unused-parameter -Wno-sign-compare -Wno-missing-field-initializers -Wno-unused-variable -Wno-unused-value -fno-inline-functions -std=gnu89
+HOSTCXXFLAGS = -O3 -fno-inline-functions
 
 ifeq ($(shell $(HOSTCC) -v 2>&1 | grep -c "clang version"), 1)
 HOSTCFLAGS  += -Wno-unused-value -Wno-unused-parameter \
@@ -373,11 +372,11 @@ CHECK		= sparse
 
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 		  -Wbitwise -Wno-return-void $(CF)
-CFLAGS_MODULE	= $(GRAPHITE)
-AFLAGS_MODULE   = $(GRAPHITE)
+CFLAGS_MODULE	= 
+AFLAGS_MODULE   = 
 LDFLAGS_MODULE  = --strip-debug
-CFLAGS_KERNEL	= $(GRAPHITE) -mcpu=cortex-a57+crc+crypto -mtune=cortex-a57
-AFLAGS_KERNEL	= $(GRAPHITE)
+CFLAGS_KERNEL	=  -mcpu=cortex-a57+crc+crypto -mtune=cortex-a57
+AFLAGS_KERNEL	= 
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage -fno-tree-loop-im
 CFLAGS_KCOV	= -fsanitize-coverage=trace-pc
 
@@ -400,7 +399,7 @@ LINUXINCLUDE    := \
 
 KBUILD_CPPFLAGS := -D__KERNEL__
 
-KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common \
+KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common \
 		   -Wno-implicit-function-declaration -Wno-format-security \
 		   -mcpu=cortex-a57+crc+crypto -mtune=cortex-a57 -std=gnu89 \
 		   -Wno-memset-transposed-args -Wno-bool-compare -Wno-logical-not-parentheses -Wno-parentheses \
