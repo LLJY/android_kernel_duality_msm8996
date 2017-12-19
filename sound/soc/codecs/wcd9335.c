@@ -9370,8 +9370,6 @@ static const struct snd_kcontrol_new tasha_analog_gain_controls[] = {
 		tasha_ear_pa_gain_get, tasha_ear_pa_gain_put),
 	SOC_ENUM_EXT("EAR SPKR PA Gain", tasha_ear_spkr_pa_gain_enum,
                      tasha_ear_spkr_pa_gain_get, tasha_ear_spkr_pa_gain_put),
-
-#ifndef CONFIG_SOUND_CONTROL
 	SOC_SINGLE_TLV("HPHL Volume", WCD9335_HPH_L_EN, 0, 20, 1,
 		line_gain),
 	SOC_SINGLE_TLV("HPHR Volume", WCD9335_HPH_R_EN, 0, 20, 1,
