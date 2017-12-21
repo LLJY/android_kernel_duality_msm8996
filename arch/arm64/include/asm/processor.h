@@ -182,6 +182,4 @@ void cpu_enable_pan(void *__unused);
 void cpu_enable_uao(void *__unused);
 #include <asm-generic/processor.h>
 
-#include <asm-generic/processor.h>
-
 #endif /* __ASM_PROCESSOR_H */
