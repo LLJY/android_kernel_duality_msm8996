@@ -2334,21 +2334,54 @@ void kgsl_idle_check(struct work_struct *work)
 {
 	struct kgsl_device *device = container_of(work, struct kgsl_device,
 							idle_check_ws);
+	int ret = 0;
+	unsigned int requested_state;
+
 	WARN_ON(device == NULL);
 	if (device == NULL)
 		return;
 
 	mutex_lock(&device->mutex);
 
+	requested_state = device->requested_state;
+
 	if (device->state == KGSL_STATE_ACTIVE
 		   || device->state ==  KGSL_STATE_NAP
 			|| device->state == KGSL_STATE_DEEP_NAP) {
 
-		if (!atomic_read(&device->active_cnt))
-			kgsl_pwrctrl_change_state(device,
-					device->requested_state);
+		if (!atomic_read(&device->active_cnt)) {
+			spin_lock(&device->submit_lock);
+			if (device->submit_now) {
+				spin_unlock(&device->submit_lock);
+				goto done;
+			}
+			/* Don't allow GPU inline submission in SLUMBER */
+			if (requested_state == KGSL_STATE_SLUMBER)
+				device->slumber = true;
+			spin_unlock(&device->submit_lock);
 
-		kgsl_pwrctrl_request_state(device, KGSL_STATE_NONE);
+			ret = kgsl_pwrctrl_change_state(device,
+					device->requested_state);
+			if (ret == -EBUSY) {
+				if (requested_state == KGSL_STATE_SLUMBER) {
+					spin_lock(&device->submit_lock);
+					device->slumber = false;
+					spin_unlock(&device->submit_lock);
+				}
+				/*
+				 * If the GPU is currently busy, restore
+				 * the requested state and reschedule
+				 * idle work.
+				 */
+				kgsl_pwrctrl_request_state(device,
+					requested_state);
+				kgsl_schedule_work(&device->idle_check_ws);
+			}
+		}
+done:
+		if (!ret)
+			kgsl_pwrctrl_request_state(device, KGSL_STATE_NONE);
+
 		if (device->state == KGSL_STATE_ACTIVE)
 			mod_timer(&device->idle_timer,
 					jiffies +
@@ -2861,6 +2894,13 @@ static void kgsl_pwrctrl_set_state(struct kgsl_device *device,
 	trace_kgsl_pwr_set_state(device, state);
 	device->state = state;
 	device->requested_state = KGSL_STATE_NONE;
+
+	spin_lock(&device->submit_lock);
+	if (state == KGSL_STATE_SLUMBER || state == KGSL_STATE_SUSPEND)
+		device->slumber = true;
+	else
+		device->slumber = false;
+	spin_unlock(&device->submit_lock);
 }
 
 static void kgsl_pwrctrl_request_state(struct kgsl_device *device,
@@ -3086,7 +3126,7 @@ EXPORT_SYMBOL(kgsl_pwr_limits_add);
 void kgsl_pwr_limits_del(void *limit_ptr)
 {
 	struct kgsl_pwr_limit *limit = limit_ptr;
-	if (IS_ERR(limit))
+	if (IS_ERR_OR_NULL(limit))
 		return;
 
 	_update_limits(limit, KGSL_PWR_DEL_LIMIT, 0);
@@ -3107,7 +3147,7 @@ int kgsl_pwr_limits_set_freq(void *limit_ptr, unsigned int freq)
 	struct kgsl_pwr_limit *limit = limit_ptr;
 	int level;
 
-	if (IS_ERR(limit))
+	if (IS_ERR_OR_NULL(limit))
 		return -EINVAL;
 
 	pwr = &limit->device->pwrctrl;
@@ -3129,7 +3169,7 @@ void kgsl_pwr_limits_set_default(void *limit_ptr)
 {
 	struct kgsl_pwr_limit *limit = limit_ptr;
 
-	if (IS_ERR(limit))
+	if (IS_ERR_OR_NULL(limit))
 		return;
 
 	_update_limits(limit, KGSL_PWR_SET_LIMIT, 0);
