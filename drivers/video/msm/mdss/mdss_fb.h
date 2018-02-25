@@ -245,6 +245,8 @@ struct msm_mdp_interface {
 				int dest_ctrl);
 	int (*input_event_handler)(struct msm_fb_data_type *mfd);
 	int (*pp_release_fnc)(struct msm_fb_data_type *mfd);
+	void (*signal_retire_fence)(struct msm_fb_data_type *mfd,
+					int retire_cnt);
 	void *private1;
 };
 
@@ -373,6 +375,7 @@ struct msm_fb_data_type {
 	bool mdss_fb_split_stored;
 
 	u32 wait_for_kickoff;
+	u32 skip_koff_wait;
 	u32 thermal_level;
 
 	int fb_mmap_type;

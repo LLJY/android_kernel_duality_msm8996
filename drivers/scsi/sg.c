@@ -1077,7 +1077,37 @@ sg_ioctl(struct file *filp, unsigned int cmd_in, unsigned long arg)
 			if (!rinfo)
 				return -ENOMEM;
 			read_lock_irqsave(&sfp->rq_list_lock, iflags);
+<<<<<<< HEAD
 			sg_fill_request_table(sfp, rinfo);
+=======
+			for (srp = sfp->headrp, val = 0; val < SG_MAX_QUEUE;
+			     ++val, srp = srp ? srp->nextrp : srp) {
+				memset(&rinfo[val], 0, SZ_SG_REQ_INFO);
+				if (srp) {
+					rinfo[val].req_state = srp->done + 1;
+					rinfo[val].problem =
+					    srp->header.masked_status &
+					    srp->header.host_status &
+					    srp->header.driver_status;
+					if (srp->done)
+						rinfo[val].duration =
+							srp->header.duration;
+					else {
+						ms = jiffies_to_msecs(jiffies);
+						rinfo[val].duration =
+						    (ms > srp->header.duration) ?
+						    (ms - srp->header.duration) : 0;
+					}
+					rinfo[val].orphan = srp->orphan;
+					rinfo[val].sg_io_owned =
+							srp->sg_io_owned;
+					rinfo[val].pack_id =
+							srp->header.pack_id;
+					rinfo[val].usr_ptr =
+							srp->header.usr_ptr;
+				}
+			}
+>>>>>>> 2d51a466f8235db5d2379254666421ae2cfb1c8f
 			read_unlock_irqrestore(&sfp->rq_list_lock, iflags);
 			result = __copy_to_user(p, rinfo,
 						SZ_SG_REQ_INFO * SG_MAX_QUEUE);
@@ -2676,6 +2706,9 @@ static void sg_proc_debug_helper(struct seq_file *s, Sg_device * sdp)
 			seq_puts(s, srp->done ?
 				 ((1 == srp->done) ?  "rcv:" : "fin:")
 				  : "act:");
+			seq_printf(s, srp->done ?
+				   ((1 == srp->done) ?  "rcv:" : "fin:")
+				   : "act:");
 			seq_printf(s, " id=%d blen=%d",
 				   srp->header.pack_id, blen);
 			if (srp->done)

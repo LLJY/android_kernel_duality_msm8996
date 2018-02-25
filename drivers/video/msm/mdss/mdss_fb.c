@@ -3462,7 +3462,7 @@ static int mdss_fb_pan_display_ex(struct fb_info *info,
 	if (var->yoffset > (info->var.yres_virtual - info->var.yres))
 		return -EINVAL;
 
-	ret = mdss_fb_wait_for_kickoff(mfd);
+	ret = mdss_fb_pan_idle(mfd);
 	if (ret) {
 		pr_err("wait_for_kick failed. rc=%d\n", ret);
 		return ret;
@@ -3637,34 +3637,36 @@ int mdss_fb_atomic_commit(struct fb_info *info,
 
 	commit_v1 = &commit->commit_v1;
 	if (commit_v1->flags & MDP_VALIDATE_LAYER) {
-		ret = mdss_fb_wait_for_kickoff(mfd);
-		if (ret) {
-			pr_err("wait for kickoff failed\n");
-		} else {
-			__ioctl_transition_dyn_mode_state(mfd,
-				MSMFB_ATOMIC_COMMIT, true, false);
-			if (mfd->panel.type == WRITEBACK_PANEL) {
-				output_layer = commit_v1->output_layer;
-				if (!output_layer) {
-					pr_err("Output layer is null\n");
-					goto end;
-				}
-				wb_change = !mdss_fb_is_wb_config_same(mfd,
-						commit_v1->output_layer);
-				if (wb_change) {
-					old_xres = pinfo->xres;
-					old_yres = pinfo->yres;
-					old_format = mfd->fb_imgType;
-					mdss_fb_update_resolution(mfd,
-						output_layer->buffer.width,
-						output_layer->buffer.height,
-						output_layer->buffer.format);
-				}
+		if (!mfd->skip_koff_wait) {
+			ret = mdss_fb_wait_for_kickoff(mfd);
+			if (ret) {
+				pr_err("wait for kickoff failed\n");
+				goto end;
 			}
-			ret = mfd->mdp.atomic_validate(mfd, file, commit_v1);
-			if (!ret)
-				mfd->atomic_commit_pending = true;
 		}
+		__ioctl_transition_dyn_mode_state(mfd,
+			MSMFB_ATOMIC_COMMIT, true, false);
+		if (mfd->panel.type == WRITEBACK_PANEL) {
+			output_layer = commit_v1->output_layer;
+			if (!output_layer) {
+				pr_err("Output layer is null\n");
+				goto end;
+			}
+			wb_change = !mdss_fb_is_wb_config_same(mfd,
+					commit_v1->output_layer);
+			if (wb_change) {
+				old_xres = pinfo->xres;
+				old_yres = pinfo->yres;
+				old_format = mfd->fb_imgType;
+				mdss_fb_update_resolution(mfd,
+					output_layer->buffer.width,
+					output_layer->buffer.height,
+					output_layer->buffer.format);
+			}
+		}
+		ret = mfd->mdp.atomic_validate(mfd, file, commit_v1);
+		if (!ret)
+			mfd->atomic_commit_pending = true;
 		goto end;
 	} else {
 		ret = mdss_fb_pan_idle(mfd);
@@ -3941,6 +3943,9 @@ skip_commit:
 	if (IS_ERR_VALUE(ret) || !sync_pt_data->flushed) {
 		mdss_fb_release_kickoff(mfd);
 		mdss_fb_signal_timeline(sync_pt_data);
+		if ((mfd->panel.type == MIPI_CMD_PANEL) &&
+			(mfd->mdp.signal_retire_fence))
+			mfd->mdp.signal_retire_fence(mfd, 1);
 	}
 
 	if (dynamic_dsi_switch) {
@@ -4774,6 +4779,7 @@ static int mdss_fb_atomic_commit_ioctl(struct fb_info *info,
 	struct mdp_frc_info *frc_info = NULL;
 	struct mdp_frc_info __user *frc_info_user;
 	struct msm_fb_data_type *mfd;
+	struct mdss_overlay_private *mdp5_data = NULL;
 
 	ret = copy_from_user(&commit, argp, sizeof(struct mdp_layer_commit));
 	if (ret) {
@@ -4785,9 +4791,20 @@ static int mdss_fb_atomic_commit_ioctl(struct fb_info *info,
 	if (!mfd)
 		return -EINVAL;
 
+	mdp5_data = mfd_to_mdp5_data(mfd);
+
 	if (mfd->panel_info->panel_dead) {
 		pr_debug("early commit return\n");
 		MDSS_XLOG(mfd->panel_info->panel_dead);
+		/*
+		 * In case of an ESD attack, since we early return from the
+		 * commits, we need to signal the outstanding fences.
+		 */
+		mdss_fb_release_fences(mfd);
+		if ((mfd->panel.type == MIPI_CMD_PANEL) &&
+			mfd->mdp.signal_retire_fence && mdp5_data)
+			mfd->mdp.signal_retire_fence(mfd,
+						mdp5_data->retire_cnt);
 		return 0;
 	}
 
