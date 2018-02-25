@@ -408,7 +408,6 @@ struct input_keymap_entry {
 #define KEY_EDIT		176
 #define KEY_SCROLLUP		177
 #define KEY_SCROLLDOWN		178
-#define KEY_KPLEFTPAREN		179
 #define KEY_KPRIGHTPAREN	180
 #define KEY_NEW			181	/* AC New */
 #define KEY_REDO		182	/* AC Redo/Repeat */
@@ -616,7 +615,6 @@ struct input_keymap_entry {
 #define KEY_LIST		0x18b
 #define KEY_MEMO		0x18c	/* Media Select Messages */
 #define KEY_CALENDAR		0x18d
-#define KEY_RED			0x18e
 #define KEY_GREEN		0x18f
 #define KEY_YELLOW		0x190
 #define KEY_BLUE		0x191
@@ -898,10 +896,6 @@ struct input_keymap_entry {
 #define SW_ROTATE_LOCK		0x0c  /* set = rotate locked/disabled */
 #define SW_LINEIN_INSERT	0x0d  /* set = inserted */
 #define SW_MUTE_DEVICE		0x12  /* set = device disabled */
-#define SW_HPHL_OVERCURRENT	0x1c  /* set = over current on left hph */
-#define SW_HPHR_OVERCURRENT	0x1d  /* set = over current on right hph */
-#define SW_UNSUPPORT_INSERT	0x1e  /* set = unsupported device inserted */
-#define SW_MICROPHONE2_INSERT   0x1f  /* set = inserted */
 #define SW_MAX			0x20
 #define SW_CNT			(SW_MAX+1)
 
