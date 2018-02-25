@@ -90,8 +90,6 @@ struct msm_camera_gpio_conf {
 	struct gpio *cam_gpio_common_tbl;
 	uint8_t cam_gpio_common_tbl_size;
 	struct gpio *cam_gpio_req_tbl;
-	struct msm_gpio_set_tbl *cam_gpio_set_tbl;
-	uint8_t cam_gpio_set_tbl_size;
 	uint8_t cam_gpio_req_tbl_size;
 #if defined(CONFIG_SONY_CAM_V4L2)
 	struct msm_gpio_set_tbl *cam_gpio_set_tbl;

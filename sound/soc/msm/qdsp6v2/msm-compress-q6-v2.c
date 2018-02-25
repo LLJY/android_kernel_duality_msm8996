@@ -1429,11 +1429,8 @@ static int msm_compr_playback_open(struct snd_compr_stream *cstream)
 	if (prtd->audio_client == NULL) {
 		pr_err("%s: Could not allocate memory for client\n", __func__);
 		kfree(pdata->audio_effects[rtd->dai_link->be_id]);
-<<<<<<< HEAD
 		kfree(pdata->sony_hweffect[rtd->dai_link->be_id]);
-=======
 		pdata->audio_effects[rtd->dai_link->be_id] = NULL;
->>>>>>> 2d51a466f8235db5d2379254666421ae2cfb1c8f
 		kfree(pdata->dec_params[rtd->dai_link->be_id]);
 		pdata->cstream[rtd->dai_link->be_id] = NULL;
 		kfree(prtd);
@@ -1599,7 +1596,6 @@ static int msm_compr_playback_free(struct snd_compr_stream *cstream)
 	q6asm_audio_client_buf_free_contiguous(dir, ac);
 
 	q6asm_audio_client_free(ac);
-<<<<<<< HEAD
 
 	kfree(pdata->audio_effects[soc_prtd->dai_link->be_id]);
 	pdata->audio_effects[soc_prtd->dai_link->be_id] = NULL;
@@ -1607,17 +1603,6 @@ static int msm_compr_playback_free(struct snd_compr_stream *cstream)
 	pdata->sony_hweffect[soc_prtd->dai_link->be_id] = NULL;
 	kfree(pdata->dec_params[soc_prtd->dai_link->be_id]);
 	pdata->dec_params[soc_prtd->dai_link->be_id] = NULL;
-=======
-	if (pdata->audio_effects[soc_prtd->dai_link->be_id] != NULL) {
-		kfree(pdata->audio_effects[soc_prtd->dai_link->be_id]);
-		pdata->audio_effects[soc_prtd->dai_link->be_id] = NULL;
-	}
-	if (pdata->dec_params[soc_prtd->dai_link->be_id] != NULL) {
-		kfree(pdata->dec_params[soc_prtd->dai_link->be_id]);
-		pdata->dec_params[soc_prtd->dai_link->be_id] = NULL;
-	}
-	pdata->is_in_use[soc_prtd->dai_link->be_id] = false;
->>>>>>> 2d51a466f8235db5d2379254666421ae2cfb1c8f
 	kfree(prtd);
 	runtime->private_data = NULL;
 
