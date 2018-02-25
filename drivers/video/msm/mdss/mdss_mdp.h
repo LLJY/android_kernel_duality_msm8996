@@ -648,6 +648,7 @@ struct mdss_mdp_ctl {
 
 	/* vsync handler for FRC */
 	struct mdss_mdp_vsync_handler frc_vsync_handler;
+	bool commit_in_progress;
 };
 
 struct mdss_mdp_mixer {
@@ -1024,7 +1025,6 @@ struct mdss_overlay_private {
 	/* video frame info used by deterministic frame rate control */
 	struct mdss_mdp_frc_fsm *frc_fsm;
 	u8 sd_transition_state;
-
 	struct kthread_worker worker;
 	struct kthread_work vsync_work;
 	struct task_struct *thread;
