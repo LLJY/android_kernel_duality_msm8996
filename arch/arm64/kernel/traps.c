@@ -50,7 +50,7 @@ static const char *handler[]= {
 	"Error"
 };
 
-int show_unhandled_signals = 1;
+int show_unhandled_signals = 0;
 unsigned int user_debug;
 
 static int __init user_debug_setup(char *str)
