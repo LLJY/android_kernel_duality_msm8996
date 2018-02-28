@@ -99,7 +99,7 @@ static bool soc_is_hmp;
 static unsigned int available_clusters = 0;
 
 /* configurable parameters */
-static unsigned int  balance_level = 60;
+static unsigned int  balance_level = 40;
 static unsigned int  idle_bottom_freq[MAX_CLUSTERS];
 static unsigned int  idle_top_freq[MAX_CLUSTERS];
 static unsigned int  num_of_cores[MAX_CLUSTERS];
