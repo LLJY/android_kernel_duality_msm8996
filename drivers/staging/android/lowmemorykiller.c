@@ -109,7 +109,13 @@ int lowmem_min_param_size(void)
 static unsigned long lowmem_count(struct shrinker *s,
 				  struct shrink_control *sc)
 {
+<<<<<<< HEAD
 	lmk_inc_stats(LMK_COUNT);
+=======
+	if (!enable_lmk)
+		return 0;
+
+>>>>>>> ade37ac6c0a5bea44a74f33028ac498b730f11c4
 	return global_page_state(NR_ACTIVE_ANON) +
 		global_page_state(NR_ACTIVE_FILE) +
 		global_page_state(NR_INACTIVE_ANON) +
