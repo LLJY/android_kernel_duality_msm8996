@@ -60,11 +60,6 @@
 #define CREATE_TRACE_POINTS
 #include "trace/lowmemorykiller.h"
 
-/* to enable lowmemorykiller */
-static int enable_lmk = 1;
-module_param_named(enable_lmk, enable_lmk, int,
-	S_IRUGO | S_IWUSR);
-
 static uint32_t lowmem_debug_level = 1;
 static short lowmem_adj[6] = {
 	0,
@@ -93,13 +88,6 @@ static unsigned long lowmem_deathpending_timeout;
 static unsigned long lowmem_count(struct shrinker *s,
 				  struct shrink_control *sc)
 {
-<<<<<<< HEAD
-	lmk_inc_stats(LMK_COUNT);
-=======
-	if (!enable_lmk)
-		return 0;
-
->>>>>>> 675f9b5fcd60... Revert "android"
 	return global_page_state(NR_ACTIVE_ANON) +
 		global_page_state(NR_ACTIVE_FILE) +
 		global_page_state(NR_INACTIVE_ANON) +
@@ -672,5 +660,4 @@ module_init(lowmem_init);
 module_exit(lowmem_exit);
 
 MODULE_LICENSE("GPL");
-
 
