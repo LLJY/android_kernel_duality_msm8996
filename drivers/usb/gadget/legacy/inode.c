@@ -1019,8 +1019,13 @@ ep0_read (struct file *fd, char __user *buf, size_t len, loff_t *ptr)
 			struct usb_ep		*ep = dev->gadget->ep0;
 			struct usb_request	*req = dev->req;
 
-			if ((retval = setup_req (ep, req, 0)) == 0)
-				retval = usb_ep_queue (ep, req, GFP_ATOMIC);
+			if ((retval = setup_req (ep, req, 0)) == 0) {
+				++dev->udc_usage;
+				spin_unlock_irq (&dev->lock);
+				retval = usb_ep_queue (ep, req, GFP_KERNEL);
+				spin_lock_irq (&dev->lock);
+				--dev->udc_usage;
+			}
 			dev->state = STATE_DEV_CONNECTED;
 
 			/* assume that was SET_CONFIGURATION */
@@ -1568,10 +1573,6 @@ delegate:
 							w_length);
 				if (value < 0)
 					break;
-<<<<<<< HEAD
-				value = usb_ep_queue (gadget->ep0, dev->req,
-							GFP_ATOMIC);
-=======
 
 				++dev->udc_usage;
 				spin_unlock (&dev->lock);
@@ -1579,7 +1580,6 @@ delegate:
 							GFP_KERNEL);
 				spin_lock (&dev->lock);
 				--dev->udc_usage;
->>>>>>> v3.18.75
 				if (value < 0) {
 					clean_req (gadget->ep0, dev->req);
 					break;
@@ -1603,8 +1603,11 @@ delegate:
 		req->length = value;
 		req->zero = value < w_length;
 <<<<<<< HEAD
+<<<<<<< HEAD
 		value = usb_ep_queue (gadget->ep0, req, GFP_ATOMIC);
 =======
+=======
+>>>>>>> 4ce07af5ccdb... Merge branch 'kernel.lnx.3.18.r33-rel' of github.com:android-linux-stable/msm-3.18 into oreo-mr1
 
 		++dev->udc_usage;
 		spin_unlock (&dev->lock);
@@ -1612,11 +1615,15 @@ delegate:
 		spin_lock(&dev->lock);
 		--dev->udc_usage;
 		spin_unlock(&dev->lock);
+<<<<<<< HEAD
 >>>>>>> v3.18.75
+=======
+>>>>>>> 4ce07af5ccdb... Merge branch 'kernel.lnx.3.18.r33-rel' of github.com:android-linux-stable/msm-3.18 into oreo-mr1
 		if (value < 0) {
 			DBG (dev, "ep_queue --> %d\n", value);
 			req->status = 0;
 		}
+		return value;
 	}
 
 	/* device stalls when value < 0 */
