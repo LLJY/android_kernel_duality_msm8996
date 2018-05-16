@@ -407,12 +407,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		    $(GEN_OPT_FLAGS) $(EXTRA_OPTS)
 
 EXTRA_OPTS := \
-	-falign-loops=1 -falign-functions=1 -falign-labels=1 -falign-jumps=1 \
-	-fira-hoist-pressure -fira-loop-pressure \
-	-fsched-pressure -fsched-spec-load -ftree-vectorize \
-	-fno-guess-branch-probability -fpredictive-commoning \
-	-fvect-cost-model=cheap -fsimd-cost-model=cheap \
-	-ftree-partial-pre -fno-gcse
+	-finline-functions
 
 GEN_OPT_FLAGS := \
  -DNDEBUG -g0 -pipe \
